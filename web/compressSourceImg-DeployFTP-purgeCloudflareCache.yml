@@ -1,0 +1,39 @@
+name: CI -> Minify, compress and deploy
+on:
+  push:
+    branches: master
+jobs:
+  web-deploy:
+    name: 🎉 Deploy
+    runs-on: ubuntu-latest
+    steps:
+      - name: 🚚 Get latest code
+        uses: actions/checkout@v2
+      # Minify Files
+      - name: 🔨 Compress Web files
+        uses: zugazagoitia/minify-js@v0.4
+      # Compress Images
+      - name: 🗜️ Compress Images
+        id: calibre
+        uses: calibreapp/image-actions@main
+        with:
+          githubToken: ${{ secrets.GITHUB_TOKEN }}
+          compressOnly: true
+      # Deploy  
+      - name: 📂 FTP Deploy
+        uses: SamKirkland/FTP-Deploy-Action@4.0.0
+        with:
+          # ftp server
+          server: ${{ secrets.FTP_SERVER }}
+          # ftp username
+          username: ${{ secrets.FTP_USERNAME }}
+          # ftp password
+          password: ${{ secrets.FTP_PASSWORD }}
+          # Deletes ALL contents of server-dir, even items in excluded with exclude argument
+          dangerous-clean-slate: true
+      - name: ☁️ Cloudflare Purge Cache
+        uses: jakejarvis/cloudflare-purge-action@v0.3.0
+        env:
+          CLOUDFLARE_ZONE: ${{ secrets.CLOUDFLARE_ZONE }}
+          CLOUDFLARE_TOKEN: ${{ secrets.CLOUDFLARE_TOKEN }}
+        
