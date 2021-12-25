@@ -20,17 +20,16 @@ jobs:
           githubToken: ${{ secrets.GITHUB_TOKEN }}
           compressOnly: true
       # Deploy  
-      - name: 📂 FTP Deploy
-        uses: SamKirkland/FTP-Deploy-Action@4.0.0
+      - name: 📂 SFTP Sync
+        uses: swillner/sftp-sync-action@v1.0
         with:
-          # ftp server
-          server: ${{ secrets.FTP_SERVER }}
-          # ftp username
-          username: ${{ secrets.FTP_USERNAME }}
-          # ftp password
-          password: ${{ secrets.FTP_PASSWORD }}
-          # Deletes ALL contents of server-dir, even items in excluded with exclude argument
-          dangerous-clean-slate: true
+          server: ${{ secrets.SSH_SERVER }}
+          user: ${{ secrets.SSH_USERNAME }}
+          user_private_key:  ${{ secrets.SSH_PRIVATE_KEY }}
+          host_public_key:  ${{ secrets.SSH_SERVER_PUBLIC_KEY }}
+          remote: ${{ secrets.SSH_REMOTE_DIR }}
+          mirror_options: "--exclude-glob=.git*/"   
+
       - name: ☁️ Cloudflare Purge Cache
         uses: jakejarvis/cloudflare-purge-action@v0.3.0
         env:
