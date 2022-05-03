@@ -11,6 +11,18 @@ on:
         description: 'Gradle version to use'
         required: true
         type: string
+      upload-codecov:
+        description: 'Option to generate and upload a report to Codecov using JaCoCo'
+        required: false
+        default: false
+        type: boolean  
+      codecov-dir:
+        description: 'Generated report directory'
+        required: false
+        default: './build/reports/jacoco/test'
+        type: string
+
+
 
 
 jobs:
@@ -22,7 +34,7 @@ jobs:
         os: [ubuntu-latest, windows-latest, macos-latest]
     steps:
       - name: Setup Java JDK
-        uses: actions/setup-java@v3.0.0
+        uses: actions/setup-java@v3.2.0
         with:
           distribution: 'temurin'
           java-version: ${{ inputs.java-version }}
@@ -38,6 +50,38 @@ jobs:
         with:
           gradle-version: ${{ inputs.gradle-version }}
           arguments: test
+
+  Codecov-Report:
+    if: ${{ inputs.upload-codecov }}
+    needs:
+      - Test
+    name: "📄 Codecov Report"
+    runs-on: ubuntu-latest
+    steps:
+      - name: Setup Java JDK
+        uses: actions/setup-java@v3.2.0
+        with:
+          distribution: 'temurin'
+          java-version: ${{ inputs.java-version }}
+
+      - name: Checkout Code
+        uses: actions/checkout@v2
+
+      - name: Validate Wrapper
+        uses: gradle/wrapper-validation-action@v1
+
+      - name: Setup and Run Gradle
+        uses: gradle/gradle-build-action@v2
+        with:
+          gradle-version: ${{ inputs.gradle-version }}
+          arguments: jacocoTestReport
+          
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v2
+        with:
+          directory: ${{ inputs.codecov-dir }}
+          flags: unittests
+          verbose: true
 
 
 
